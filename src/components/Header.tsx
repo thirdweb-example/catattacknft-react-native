@@ -3,13 +3,13 @@ import React from 'react';
 import {ConnectWallet, useSDK} from '@thirdweb-dev/react-native';
 
 export const Header = ({onRefresh}: {onRefresh: () => void}) => {
-  const onTest = () => {
+  const onPress = () => {
     onRefresh();
   };
 
   return (
     <View style={styles.header}>
-      <TouchableOpacity onPress={onTest}>
+      <TouchableOpacity onPress={onPress}>
         <Image
           style={styles.logo}
           resizeMode="contain"

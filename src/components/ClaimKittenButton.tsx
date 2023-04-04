@@ -1,51 +1,36 @@
-import {useContract, useSDK} from '@thirdweb-dev/react-core';
-import React from 'react';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
+import {TransactionError, Web3Button} from '@thirdweb-dev/react-native';
+import React, {useState} from 'react';
+import {StyleSheet, Text} from 'react-native';
 import {CONTRACT_ADDR} from '../utils/constants';
 
 export const ClaimKittenButton = () => {
-  const sdk = useSDK();
+  const [error, setError] = useState<Error | null>(null);
 
-  const onConnectPress = async () => {
-    const contract = await sdk?.getContract(CONTRACT_ADDR);
-    contract?.call('claimKitten');
-  };
   return (
-    <TouchableOpacity
-      style={styles.connectWalletButton}
-      onPress={onConnectPress}>
-      <Text style={styles.darkText}>Claim Kitten</Text>
-    </TouchableOpacity>
+    <>
+      <Web3Button
+        contractAddress={CONTRACT_ADDR}
+        action={contract => {
+          contract?.call('claimKitten');
+        }}
+        onError={err => {
+          setError(err);
+        }}
+        onSubmit={() => setError(null)}>
+        Claim Kitten
+      </Web3Button>
+      {error && (
+        <Text style={styles.errorText}>
+          {(error as TransactionError).reason}
+        </Text>
+      )}
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  connectWalletView: {
-    height: '50',
-    minWidth: '200px',
-    width: '100%',
-  },
-  darkText: {
-    color: 'black',
-    textAlign: 'center',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  connectWalletButton: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    color: 'white',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    gap: 8,
+  errorText: {
+    marginTop: 3,
+    color: 'red',
   },
 });

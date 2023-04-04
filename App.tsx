@@ -4,6 +4,7 @@
 
 import {BaseGoerli} from '@thirdweb-dev/chains';
 import {
+  metamaskWallet,
   ThirdwebProvider,
   useAddress,
   useConnectionStatus,
@@ -13,7 +14,7 @@ import {
   useOwnedNFTs,
   Web3Button,
 } from '@thirdweb-dev/react-native';
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -34,7 +35,15 @@ const activeChain = BaseGoerli;
 const App = () => {
   return (
     <ThirdwebProvider
+      theme="dark"
       autoConnect={true}
+      dAppMeta={{
+        name: 'Cat Attack',
+        description: 'A simple game built with Thirdweb',
+        url: 'https://github.com/thirdweb-example/catattacknft-react-native',
+        logoUrl: 'https://thirdweb.com/favicon.ico',
+      }}
+      supportedWallets={[metamaskWallet()]}
       supportedChains={[activeChain]}
       activeChain={activeChain}>
       <AppInner />
@@ -43,28 +52,31 @@ const App = () => {
 };
 
 const AppInner = () => {
-  const [refreshing, setRefreshing] = React.useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const address = useAddress();
   const connectionStatus = useConnectionStatus();
 
   const {contract} = useContract(CONTRACT_ADDR);
 
-  const {
-    data: nfts,
-    refetch,
-    status,
-    error,
-    isLoading: nftsLoading,
-  } = useOwnedNFTs(contract, address);
-  const {data: playerScore} = useContractRead(contract, 'getScore', address);
+  const {data: nfts, refetch: refetchNFT} = useOwnedNFTs(contract, address);
+  const {data: playerScore, refetch: refetchScore} = useContractRead(
+    contract,
+    'getScore',
+    [address],
+  );
   const eventsQuery = useContractEvents(contract, undefined, {
     queryFilter: {
-      fromBlock: -100,
+      fromBlock: -50,
     },
   });
   const events = eventsQuery.data
     ?.filter(e => ['LevelUp', 'Miaowed'].includes(e.eventName))
     .slice(0, 20);
+
+  const refetch = useCallback(async () => {
+    refetchScore();
+    refetchNFT();
+  }, [refetchNFT, refetchScore]);
 
   const [targetAddress, setTargetAddress] = useState<string>('');
 
@@ -77,7 +89,7 @@ const AppInner = () => {
     playerScore: playerScore?.toNumber() || 0,
   };
 
-  const onRefresh = React.useCallback(async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);

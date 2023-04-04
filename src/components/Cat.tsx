@@ -1,6 +1,6 @@
 import {
-  ActivityIndicator,
   Alert,
+  Dimensions,
   StyleSheet,
   Text,
   TextInput,
@@ -14,12 +14,15 @@ import {ThirdwebNftMedia} from './ThirdwebNftMedia';
 import Modal from 'react-native-modal';
 import {Events} from './Events';
 import {ModalHeaderTextClose} from './ModalHeaderTextClose';
-import {useSDK} from '@thirdweb-dev/react-core';
 import {GameContext} from '../contexts/game-context';
+import {Web3Button} from '@thirdweb-dev/react-native';
 
 type CatProps = {
   cat: NFT;
 };
+
+const DEVICE_WIDTH = Dimensions.get('window').width;
+const MODAL_HEIGHT = Dimensions.get('window').height * 0.7;
 
 const modalText = {
   1: {
@@ -44,12 +47,9 @@ const modalText = {
 export const Cat = ({cat}: CatProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<string | undefined>();
-  const [error, setError] = useState();
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | undefined>();
 
   const {refetch} = useContext(GameContext);
-
-  const sdk = useSDK();
 
   const level = (Number(cat.metadata.id) + 1) as 1 | 2 | 3;
 
@@ -64,48 +64,6 @@ export const Cat = ({cat}: CatProps) => {
     setIsOpen(false);
   }, [setIsOpen]);
 
-  const onActionButtonPress = useCallback(async () => {
-    console.log('level', level);
-
-    const contract = await sdk?.getContract(CONTRACT_ADDR);
-
-    let promise = null;
-
-    setIsLoading(true);
-    if (level === 1) {
-      if (!selectedAddress) {
-        Alert.alert('Please enter a wallet address before taking an action.');
-        return;
-      }
-      promise = contract?.erc1155.transfer(selectedAddress, 0, 1);
-    } else if (level === 2) {
-      promise = contract?.erc1155.burn(1, 1);
-    } else if (level === 3) {
-      if (!selectedAddress) {
-        Alert.alert('Please enter a wallet address before taking an action.');
-        return;
-      }
-      promise = contract?.call('attack', selectedAddress);
-    }
-
-    if (promise) {
-      promise
-        .then(() => {
-          closeModal();
-        })
-        .catch(error_ => {
-          console.log('error', error_);
-          setError(error_);
-        })
-        .finally(() => {
-          refetch();
-          setIsLoading(false);
-        });
-    } else {
-      setIsLoading(false);
-    }
-  }, [closeModal, level, refetch, sdk, selectedAddress]);
-
   const onAddressSelected = (address: string) => {
     setSelectedAddress(address);
     setError(undefined);
@@ -115,7 +73,11 @@ export const Cat = ({cat}: CatProps) => {
 
   return (
     <>
-      <Modal useNativeDriver isVisible={isOpen} backdropOpacity={1}>
+      <Modal
+        useNativeDriver
+        hideModalContentWhileAnimating={true}
+        isVisible={isOpen}
+        backdropOpacity={0.9}>
         <View style={styles.modal}>
           <ModalHeaderTextClose
             onClose={closeModal}
@@ -147,17 +109,51 @@ export const Cat = ({cat}: CatProps) => {
             </>
           )}
 
-          <TouchableOpacity style={styles.button} onPress={onActionButtonPress}>
-            {isLoading ? (
-              <ActivityIndicator />
-            ) : (
-              <Text style={styles.actionButtonText}>
-                {level === 1 && 'Transfer'}
-                {level === 2 && 'Burn'}
-                {level === 3 && 'Attack'}
-              </Text>
-            )}
-          </TouchableOpacity>
+          <Web3Button
+            contractAddress={CONTRACT_ADDR}
+            action={contract => {
+              if (level === 1) {
+                if (!selectedAddress) {
+                  Alert.alert(
+                    'Please enter a wallet address before taking an action.',
+                  );
+                  return;
+                }
+                return contract.erc1155.transfer(selectedAddress, 0, 1);
+              }
+              if (level === 2) {
+                return contract.erc1155.burn(1, 1);
+              }
+              if (level === 3) {
+                if (!selectedAddress) {
+                  Alert.alert(
+                    'Please enter a wallet address before taking an action.',
+                  );
+                  return;
+                }
+                return contract.call('attack', [selectedAddress]);
+              }
+            }}
+            onError={e => {
+              setError(e);
+            }}
+            onSubmit={() => {
+              setError(undefined);
+            }}
+            onSuccess={() => {
+              closeModal();
+              refetch();
+              setError(undefined);
+            }}>
+            {level === 1
+              ? 'Transfer'
+              : level === 2
+              ? 'Burn'
+              : level === 3
+              ? 'Attack'
+              : null}
+          </Web3Button>
+
           {error && (
             <Text style={styles.errorText}>
               {(error as TransactionError).reason}
@@ -211,7 +207,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     borderColor: '#2C3035',
+    padding: 5,
     textAlign: 'left',
+    color: '#FFFFFF',
   },
   walletAddrText: {
     fontSize: 16,
@@ -222,13 +220,18 @@ const styles = StyleSheet.create({
   },
   eventsContainer: {
     display: 'flex',
-    height: 350,
+    flex: 0.9,
     alignContent: 'center',
     alignItems: 'center',
   },
   modal: {
     display: 'flex',
-    height: 500,
+    position: 'absolute',
+    bottom: -20,
+    left: -20,
+    width: DEVICE_WIDTH,
+    height: MODAL_HEIGHT,
+    padding: 10,
   },
   actionButtonText: {
     color: '#0F1318',

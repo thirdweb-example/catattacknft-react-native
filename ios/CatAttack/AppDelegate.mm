@@ -6,6 +6,8 @@
 
 #import <React/RCTAppSetupUtils.h>
 
+#import <React/RCTLinkingManager.h>
+
 #if RCT_NEW_ARCH_ENABLED
 #import <React/CoreModulesPlugins.h>
 #import <React/RCTCxxBridgeDelegate.h>
@@ -45,22 +47,56 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 
   NSDictionary *initProps = [self prepareInitialProps];
   UIView *rootView = [self.reactDelegate createRootViewWithBridge:bridge moduleName:@"CatAttack" initialProperties:initProps];
-
-  if (@available(iOS 13.0, *)) {
-    rootView.backgroundColor = [UIColor systemBackgroundColor];
-  } else {
-    rootView.backgroundColor = [UIColor whiteColor];
-  }
-
+  
+  rootView.backgroundColor = [UIColor colorNamed:@"yellow"];
+  
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
   UIViewController *rootViewController = [self.reactDelegate createRootViewController];
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
+  
+  // Create a UIImageView object and set its frame to match the view's bounds
+  UIImageView *backgroundImageView = [[UIImageView alloc] initWithFrame:rootView.bounds];
+
+  // Set the image of the UIImageView
+  backgroundImageView.image = [UIImage imageNamed:@"background"];
+
+  // Set the content mode of the UIImageView
+  backgroundImageView.contentMode = UIViewContentModeScaleAspectFill;
+
+  // Add the UIImageView to the view
+  [self.window.rootViewController.view addSubview:backgroundImageView];
+
+  // Send the UIImageView to the back of the view
+  [self.window.rootViewController.view sendSubviewToBack:backgroundImageView];
+  
   [self.window makeKeyAndVisible];
   [super application:application didFinishLaunchingWithOptions:launchOptions];
   return YES;
 }
 
+- (BOOL)application:(UIApplication *)application continueUserActivity:(nonnull NSUserActivity *)userActivity
+ restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler
+{
+  if ([userActivity.activityType isEqualToString: NSUserActivityTypeBrowsingWeb]) {
+      NSURL *url = userActivity.webpageURL;
+
+    NSLog(@"This is the url!!: %@", url);
+
+      }
+  
+ return [RCTLinkingManager application:application
+                  continueUserActivity:userActivity
+                    restorationHandler:restorationHandler];
+}
+
+- (BOOL)application:(UIApplication *)application
+   openURL:(NSURL *)url
+   options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+{
+  NSLog(@"This is another url!!: %@", url);
+  return [RCTLinkingManager application:application openURL:url options:options];
+}
 /// This method controls whether the `concurrentRoot`feature of React18 is turned on or off.
 ///
 /// @see: https://reactjs.org/blog/2022/03/29/react-v18.html
