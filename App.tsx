@@ -4,6 +4,7 @@
 
 import {BaseGoerli} from '@thirdweb-dev/chains';
 import {
+  coinbaseWallet,
   metamaskWallet,
   ThirdwebProvider,
   useAddress,
@@ -43,7 +44,12 @@ const App = () => {
         url: 'https://github.com/thirdweb-example/catattacknft-react-native',
         logoUrl: 'https://thirdweb.com/favicon.ico',
       }}
-      supportedWallets={[metamaskWallet()]}
+      supportedWallets={[
+        metamaskWallet(),
+        coinbaseWallet({
+          callbackURL: new URL('com.catattack://'),
+        }),
+      ]}
       supportedChains={[activeChain]}
       activeChain={activeChain}>
       <AppInner />
