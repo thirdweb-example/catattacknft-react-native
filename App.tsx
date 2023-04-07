@@ -13,11 +13,12 @@ import {
   useContractEvents,
   useContractRead,
   useOwnedNFTs,
-  Web3Button,
 } from '@thirdweb-dev/react-native';
-import React, {useCallback, useState} from 'react';
+import {handleResponse} from '@coinbase/wallet-mobile-sdk';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
+  Linking,
   RefreshControl,
   SafeAreaView,
   ScrollView,
@@ -30,6 +31,7 @@ import {Welcome} from './src/components/Welcome';
 import {EventContext} from './src/contexts/event-context';
 import {GameContext} from './src/contexts/game-context';
 import {CONTRACT_ADDR} from './src/utils/constants';
+import {ClaimKittenButton} from './src/components/ClaimKittenButton';
 
 const activeChain = BaseGoerli;
 
@@ -63,6 +65,14 @@ const AppInner = () => {
   const connectionStatus = useConnectionStatus();
 
   const {contract} = useContract(CONTRACT_ADDR);
+
+  useEffect(() => {
+    const sub = Linking.addEventListener('url', ({url}) => {
+      // @ts-ignore
+      handleResponse(url);
+    });
+    return () => sub?.remove();
+  }, []);
 
   const {data: nfts, refetch: refetchNFT} = useOwnedNFTs(contract, address);
   const {data: playerScore, refetch: refetchScore} = useContractRead(
@@ -124,17 +134,7 @@ const AppInner = () => {
             {(connectionStatus === 'connecting' ||
               connectionStatus === 'unknown') && <ActivityIndicator />}
             {address ? (
-              <>
-                {nfts?.length ? (
-                  <Cats />
-                ) : (
-                  <Web3Button
-                    contractAddress={CONTRACT_ADDR}
-                    action={contract_ => contract_?.call('claimKitten')}>
-                    Claim Kitten
-                  </Web3Button>
-                )}
-              </>
+              <>{nfts?.length ? <Cats /> : <ClaimKittenButton />}</>
             ) : null}
             <Events />
           </ScrollView>
