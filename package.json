@@ -7,14 +7,16 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "build:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.17.11",
-    "@thirdweb-dev/react-native": "0.2.4",
-    "@thirdweb-dev/react-native-compat": "0.2.4",
+    "@thirdweb-dev/react-native": "0.2.8",
+    "@thirdweb-dev/react-native-compat": "0.2.8",
     "ethers": "^5.0.0",
     "expo": "^47.0.0",
+    "metro-minify-terser": "^0.76.3",
     "node-libs-browser": "^2.2.1",
     "react": "18.1.0",
     "react-native": "0.70.8",

@@ -1,4 +1,4 @@
-import {Image, StyleSheet, Text, View} from 'react-native';
+import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import React from 'react';
 import {Address} from './Address';
 import LevelName from './LevelName';
@@ -21,34 +21,30 @@ export const EventRow = ({type, data, onAddressPress}: EventProps) => {
 
       <View style={styles.textContent}>
         {type === 'LevelUp' && (
-          <>
-            <Address
-              style={styles.address}
-              address={data.account}
-              onPress={onAddressPress}
-            />
+          <TouchableOpacity
+            style={styles.textContent}
+            onPress={() => onAddressPress?.(data.account)}>
+            <Address style={styles.address} address={data.account} />
             <View style={styles.eventContainer}>
               <Text style={styles.eventText}>
                 {level === 1 ? 'claimed a' : 'leveled up to'}{' '}
               </Text>
               <LevelName level={level} />
             </View>
-          </>
+          </TouchableOpacity>
         )}
         {type === 'Miaowed' && (
-          <>
-            <Address
-              style={styles.address}
-              address={data.attacker}
-              onPress={onAddressPress}
-            />
+          <TouchableOpacity
+            style={styles.textContent}
+            onPress={() => onAddressPress?.(data.attacker)}>
+            <Address style={styles.address} address={data.attacker} />
 
             <View style={styles.eventContainer}>
               <Text style={styles.eventText}>{'destroyed '} </Text>
               <Address style={styles.address} address={`${data.victim} `} />
               <LevelName level={level} />
             </View>
-          </>
+          </TouchableOpacity>
         )}
       </View>
     </View>
@@ -66,7 +62,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   textContent: {
-    marginLeft: 16,
+    marginLeft: 5,
     justifyContent: 'center',
     alignItems: 'flex-start',
   },

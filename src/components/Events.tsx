@@ -49,7 +49,7 @@ export const Events = ({
             />
           ))
         ) : (
-          <Text>No Events</Text>
+          <Text style={styles.totalPointsScore}>No Events</Text>
         )}
       </ScrollView>
     </>
@@ -57,6 +57,9 @@ export const Events = ({
 };
 
 const styles = StyleSheet.create({
+  totalPointsScore: {
+    color: '#FFFFFF',
+  },
   gameEvents: {
     marginTop: 15,
     marginBottom: 15,

@@ -25,7 +25,9 @@ export const Cats = () => {
         </View>
         <View style={styles.kills}>
           <Text style={styles.totalPoints}>Cats Destroyed: </Text>
-          <Text style={styles.totalPointsScore}>{badges[0].quantityOwned}</Text>
+          <Text style={styles.totalPointsScore}>
+            {badges.length > 0 ? badges[0].quantityOwned : 0}
+          </Text>
         </View>
         {badges.length > 0 && (
           <View style={styles.kills}>

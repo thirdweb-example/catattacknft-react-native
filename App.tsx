@@ -82,7 +82,7 @@ const AppInner = () => {
   );
   const eventsQuery = useContractEvents(contract, undefined, {
     queryFilter: {
-      fromBlock: -50,
+      fromBlock: -300,
     },
   });
   const events = eventsQuery.data

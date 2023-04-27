@@ -1,9 +1,11 @@
 import {TransactionError, Web3Button} from '@thirdweb-dev/react-native';
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {StyleSheet, Text} from 'react-native';
 import {CONTRACT_ADDR} from '../utils/constants';
+import {GameContext} from '../contexts/game-context';
 
 export const ClaimKittenButton = () => {
+  const {refetch} = useContext(GameContext);
   const [error, setError] = useState<Error | null>(null);
 
   return (
@@ -11,7 +13,10 @@ export const ClaimKittenButton = () => {
       <Web3Button
         contractAddress={CONTRACT_ADDR}
         action={contract => {
-          contract?.call('claimKitten');
+          return contract?.call('claimKitten');
+        }}
+        onSuccess={() => {
+          refetch();
         }}
         onError={err => {
           setError(err);

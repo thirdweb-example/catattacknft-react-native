@@ -1,6 +1,6 @@
 import {Image, StyleSheet, TouchableOpacity, View} from 'react-native';
 import React from 'react';
-import {ConnectWallet, useSDK} from '@thirdweb-dev/react-native';
+import {ConnectWallet} from '@thirdweb-dev/react-native';
 
 export const Header = ({onRefresh}: {onRefresh: () => void}) => {
   const onPress = () => {
