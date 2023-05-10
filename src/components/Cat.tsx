@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useCallback, useContext, useState} from 'react';
+import React, {useCallback, useContext, useMemo, useState} from 'react';
 import {NFT, TransactionError} from '@thirdweb-dev/sdk';
 import {CONTRACT_ADDR} from '../utils/constants';
 import {ThirdwebNftMedia} from './ThirdwebNftMedia';
@@ -51,9 +51,13 @@ export const Cat = ({cat}: CatProps) => {
 
   const {refetch} = useContext(GameContext);
 
-  const level = (Number(cat.metadata.id) + 1) as 1 | 2 | 3;
+  const level = useMemo(() => {
+    return (Number(cat.metadata.id) + 1) as 1 | 2 | 3;
+  }, [cat.metadata.id]);
 
-  const quantity = cat.quantityOwned;
+  const quantity = useMemo(() => {
+    return cat.quantityOwned;
+  }, [cat.quantityOwned]);
 
   const openModal = useCallback(() => {
     setIsOpen(true);
@@ -69,7 +73,9 @@ export const Cat = ({cat}: CatProps) => {
     setError(undefined);
   };
 
-  const text = modalText[level];
+  const text = useMemo(() => {
+    return modalText[level];
+  }, [level]);
 
   return (
     <>
@@ -117,7 +123,7 @@ export const Cat = ({cat}: CatProps) => {
                   Alert.alert(
                     'Please enter a wallet address before taking an action.',
                   );
-                  return;
+                  return Promise.reject();
                 }
                 return contract.erc1155.transfer(selectedAddress, 0, 1);
               }
@@ -129,12 +135,15 @@ export const Cat = ({cat}: CatProps) => {
                   Alert.alert(
                     'Please enter a wallet address before taking an action.',
                   );
-                  return;
+                  return Promise.reject();
                 }
                 return contract.call('attack', [selectedAddress]);
               }
+
+              return Promise.resolve();
             }}
             onError={e => {
+              console.log('error', e);
               setError(e);
             }}
             onSubmit={() => {
@@ -156,7 +165,9 @@ export const Cat = ({cat}: CatProps) => {
 
           {error && (
             <Text style={styles.errorText}>
-              {(error as TransactionError).reason}
+              {(error as TransactionError).reason
+                ? (error as TransactionError).reason
+                : (error as Error).message}
             </Text>
           )}
         </View>

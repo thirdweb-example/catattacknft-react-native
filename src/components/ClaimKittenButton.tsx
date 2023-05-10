@@ -26,7 +26,9 @@ export const ClaimKittenButton = () => {
       </Web3Button>
       {error && (
         <Text style={styles.errorText}>
-          {(error as TransactionError).reason}
+          {(error as TransactionError).reason
+            ? (error as TransactionError).reason
+            : error?.message}
         </Text>
       )}
     </>

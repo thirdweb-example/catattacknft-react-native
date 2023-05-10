@@ -5,6 +5,7 @@
 import {BaseGoerli} from '@thirdweb-dev/chains';
 import {
   coinbaseWallet,
+  localWallet,
   metamaskWallet,
   ThirdwebProvider,
   useAddress,
@@ -51,6 +52,7 @@ const App = () => {
         coinbaseWallet({
           callbackURL: new URL('com.catattack://'),
         }),
+        localWallet(),
       ]}
       supportedChains={[activeChain]}
       activeChain={activeChain}>
